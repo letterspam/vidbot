@@ -56,6 +56,8 @@ discord.client.on("messageCreate", async (message) => {
         const status = discord.getStatus();
         const lines = [
           "Connected: " + (status.connected ? "yes" : "no"),
+          "Go Live: " + (status.streaming ? "yes" : "no"),
+          "Phase: " + (status.phase ?? "idle"),
           "Playing: " + (status.nowPlaying ? "yes" : "no"),
           "Volume: " + status.volume.toFixed(0) + "%",
         ];
