@@ -23,7 +23,7 @@ Implemented now:
 - Local file resolution under VIDBOT_MEDIA_ROOT.
 - Direct HTTP(S) URL resolution.
 - Discord attachment URL handling.
-- Google Drive, Mega, and YouTube URL classification.
+- Google Drive, Mega, and YouTube URL resolution, using direct Drive downloads plus MEGAJS and yt-dlp-backed streaming.
 - Discord selfbot session integration.
 - Join the author's current voice channel.
 - Go Live playback through @dank074/discord-video-stream.
@@ -32,7 +32,7 @@ Implemented now:
 
 Not implemented yet:
 
-- Actual Google Drive/Mega/YouTube stream resolution.
+- Full Google Drive confirmation/large-file handling and live verification of all hosted providers.
 - Pause/resume/seek/queue controls.
 - Full reconnection/error recovery.
 - End-to-end live Discord verification.
@@ -89,7 +89,7 @@ $source <URL or local file>
 
 For $play, the account joins the voice channel that the message author is currently in. A Discord message attachment can also be used directly by sending the $play command with a video attached.
 
-Only users listed in VIDBOT_ALLOWED_USERS can control the client when that variable is non-empty.
+Only users listed in VIDBOT_ALLOWED_USERS can control the client. An empty allow-list disables commands rather than opening control to everyone.
 
 ## Architecture
 
@@ -134,9 +134,9 @@ That library documents Go Live and camera streaming, H.264/H.265 support, RTP/RT
 | Local file | Working |
 | Direct HTTP(S) media URL | Working, provided FFmpeg can read it |
 | Discord attachment URL | Working as a direct URL |
-| Google Drive | Classified, resolver not implemented |
-| Mega | Classified, resolver not implemented |
-| YouTube | Classified, resolver not implemented |
+| Google Drive | Public share links resolved to direct-download URLs; edge cases need testing |
+| Mega | Stream resolver implemented; live testing still needed |
+| YouTube | Stream resolver implemented; live testing still needed |
 
 Hosted-provider URLs are deliberately resolved outside the Discord transport layer. A YouTube share URL, for example, is not necessarily a direct media stream.
 
