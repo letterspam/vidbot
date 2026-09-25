@@ -1,10 +1,8 @@
-import type { MediaSource } from "../types.js";
 import { File as MegaFile } from "megajs";
 import { YtDlp } from "ytdlp-nodejs";
+import type { MediaSource } from "../types.js";
 
-const ytdlp = new YtDlp();
-
-function driveFileId(value: string): string | undefined {
+export function extractGoogleDriveFileId(value: string): string | undefined {
   const url = new URL(value);
 
   const pathMatch = url.pathname.match(/\/file\/d\/([^/]+)/);
@@ -15,7 +13,7 @@ function driveFileId(value: string): string | undefined {
 }
 
 export function resolveGoogleDrive(value: string): MediaSource {
-  const id = driveFileId(value);
+  const id = extractGoogleDriveFileId(value);
   if (!id) {
     throw new Error(
       "Could not extract a Google Drive file ID. Use a file sharing URL.",
@@ -50,6 +48,7 @@ export async function resolveMega(value: string): Promise<MediaSource> {
 }
 
 export async function resolveYouTube(value: string): Promise<MediaSource> {
+  const ytdlp = new YtDlp();
   const input = ytdlp
     .stream(value)
     .filter("audioandvideo")
