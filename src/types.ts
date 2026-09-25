@@ -1,6 +1,6 @@
 import type { Readable } from "node:stream";
 
-export type SourceKind = "file" | "url" | "unsupported";
+export type SourceKind = "file" | "url" | "stream" | "unsupported";
 
 export type Provider =
   | "local"
