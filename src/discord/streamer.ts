@@ -205,4 +205,9 @@ export class DiscordStreamer {
     this.stop();
     this.streamer.leaveVoice();
   }
+
+  shutdown(): void {
+    this.leave();
+    this.client.destroy();
+  }
 }
