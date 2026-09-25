@@ -52,6 +52,26 @@ discord.client.on("messageCreate", async (message) => {
       case "leave":
         discord.leave();
         break;
+      case "volume": {
+        if (!argument) {
+          throw new Error("Usage: " + config.prefix + "volume <0-200>");
+        }
+
+        const volume = Number(argument);
+        if (!Number.isFinite(volume)) {
+          throw new Error("Volume must be a number from 0 to 200");
+        }
+
+        const applied = await discord.setVolume(volume);
+        if (!applied) {
+          throw new Error(
+            "The current media pipeline does not expose a live volume control",
+          );
+        }
+
+        await message.reply("Volume: " + discord.getVolume().toFixed(0) + "%");
+        break;
+      }
       case "source": {
         if (!argument) {
           throw new Error(
