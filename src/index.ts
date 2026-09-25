@@ -52,6 +52,30 @@ discord.client.on("messageCreate", async (message) => {
       case "leave":
         discord.leave();
         break;
+      case "nowplaying": {
+        const nowPlaying = discord.getNowPlaying();
+        if (!nowPlaying) {
+          await message.reply("Nothing is currently playing.");
+          break;
+        }
+
+        const title = nowPlaying.source.title ?? nowPlaying.source.provider;
+        const elapsed = Math.floor(nowPlaying.elapsedSeconds);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = String(elapsed % 60).padStart(2, "0");
+
+        await message.reply(
+          "Now playing: " +
+            title +
+            "\nSource: " +
+            nowPlaying.source.provider +
+            "\nElapsed: " +
+            minutes +
+            ":" +
+            seconds,
+        );
+        break;
+      }
       case "volume": {
         if (!argument) {
           throw new Error("Usage: " + config.prefix + "volume <0-200>");
