@@ -78,6 +78,7 @@ Status: [ ] not started, [~] in progress, [x] complete, [!] blocked.
 - [ ] Add resume.
 - [ ] Add seek.
 - [x] Add nowplaying.
+- [x] Add playback status.
 - [x] Add volume.
 - [ ] Add skip/queue support.
 - [x] Restrict controls to VIDBOT_ALLOWED_USERS when configured.
