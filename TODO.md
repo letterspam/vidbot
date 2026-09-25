@@ -78,7 +78,7 @@ Status: [ ] not started, [~] in progress, [x] complete, [!] blocked.
 - [ ] Add resume.
 - [ ] Add seek.
 - [ ] Add nowplaying.
-- [ ] Add volume.
+- [x] Add volume.
 - [ ] Add skip/queue support.
 - [x] Restrict controls to VIDBOT_ALLOWED_USERS when configured.
 - [x] Return useful command errors.
@@ -88,7 +88,7 @@ Status: [ ] not started, [~] in progress, [x] complete, [!] blocked.
 - [x] Make playback cancellation idempotent.
 - [ ] Handle FFmpeg process exit explicitly.
 - [ ] Handle remote source timeouts.
-- [ ] Handle Discord voice disconnects.
+- [~] Avoid unnecessary voice reconnects; event-driven recovery is still needed.
 - [ ] Add retries for transient network/provider errors.
 - [ ] Add a watchdog for hung media pipelines.
 - [x] Clean up the active stream when stop/leave is called.
