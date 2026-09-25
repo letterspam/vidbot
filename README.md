@@ -84,6 +84,8 @@ The current command prefix defaults to $.
 $play <URL or local file>
 $stop
 $leave
+$status
+$nowplaying
 $volume <0-200>
 $source <URL or local file>
 ~~~
