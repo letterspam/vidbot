@@ -23,7 +23,11 @@ function localSource(value: string, config: Config): MediaSource {
     );
   }
 
-  const filePath = assertInsideRoot(value, config.mediaRoot);
+  const candidate = path.isAbsolute(value) || path.win32.isAbsolute(value)
+    ? value
+    : path.resolve(config.mediaRoot, value);
+  const filePath = assertInsideRoot(candidate, config.mediaRoot);
+
   if (!fs.existsSync(filePath)) {
     throw new Error("Local media file does not exist");
   }
