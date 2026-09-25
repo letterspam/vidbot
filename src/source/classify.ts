@@ -1,4 +1,5 @@
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { ClassifiedInput, Provider } from "../types.js";
 
 const HOST_PROVIDERS: ReadonlyArray<[string, Provider]> = [
@@ -13,7 +14,6 @@ const HOST_PROVIDERS: ReadonlyArray<[string, Provider]> = [
   ["youtube.com", "youtube"],
   ["youtu.be", "youtube"],
   ["youtube-nocookie.com", "youtube"],
-  ["googlevideo.com", "youtube"],
 ];
 
 function matchesHost(hostname: string, domain: string): boolean {
@@ -32,17 +32,14 @@ export function classifyInput(value: string): ClassifiedInput {
   }
 
   if (!url) {
-    if (path.isAbsolute(input) || input.startsWith(".") || input.includes(path.sep)) {
-      return { kind: "file", provider: "local", value: input };
-    }
-    return { kind: "unsupported", value: input };
+    return { kind: "file", provider: "local", value: input };
   }
 
   if (url.protocol === "file:") {
     return {
       kind: "file",
       provider: "local",
-      value: decodeURIComponent(url.pathname),
+      value: fileURLToPath(url),
     };
   }
 
