@@ -24,6 +24,10 @@ export function classifyInput(value: string): ClassifiedInput {
   const input = value.trim();
   if (!input) throw new Error("Media source cannot be empty");
 
+  if (path.isAbsolute(input) || path.win32.isAbsolute(input)) {
+    return { kind: "file", provider: "local", value: input };
+  }
+
   let url: URL | undefined;
   try {
     url = new URL(input);
