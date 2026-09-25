@@ -12,12 +12,7 @@ discord.client.on("ready", () => {
 
 discord.client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
-  if (
-    config.allowedUsers.size > 0 &&
-    !config.allowedUsers.has(message.author.id)
-  ) {
-    return;
-  }
+  if (!config.allowedUsers.has(message.author.id)) return;
   if (!message.content.startsWith(config.prefix)) return;
 
   const parts = message.content
