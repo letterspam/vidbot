@@ -30,6 +30,10 @@ discord.client.on("messageCreate", async (message) => {
   try {
     switch (command) {
       case "play": {
+        if (!message.guildId) {
+          throw new Error("Playback commands must be used in a server");
+        }
+
         const voiceChannel = message.author.voice?.channel;
         if (!voiceChannel) {
           throw new Error("Join a voice channel before using play");
@@ -43,7 +47,7 @@ discord.client.on("messageCreate", async (message) => {
 
         const source = await resolveSource(sourceInput, config);
         await discord.join(message.guildId, voiceChannel.id);
-        console.log("Playing " + source.provider + " source: " + sourceInput);
+        console.log("Playing " + source.provider + " source");
         await discord.play(source);
         break;
       }
