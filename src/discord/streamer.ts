@@ -117,6 +117,9 @@ export class DiscordStreamer {
       let ffmpegError: unknown;
       const ffmpegFinished = promise.catch((error) => {
         ffmpegError = error;
+        if (!abort.signal.aborted) {
+          abort.abort(error);
+        }
       });
 
       command.on("error", (error) => {
