@@ -10,6 +10,21 @@ discord.client.on("ready", () => {
   console.log("vidbot ready as " + (discord.client.user?.tag ?? "unknown"));
 });
 
+let shuttingDown = false;
+const shutdown = () => {
+  if (shuttingDown) return;
+  shuttingDown = true;
+
+  try {
+    discord.shutdown();
+  } finally {
+    process.exitCode = 0;
+  }
+};
+
+process.once("SIGINT", shutdown);
+process.once("SIGTERM", shutdown);
+
 discord.client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
   if (!config.allowedUsers.has(message.author.id)) return;
