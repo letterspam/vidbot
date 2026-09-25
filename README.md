@@ -2,7 +2,7 @@
 
 vidbot is an experimental project for streaming video and audio into a Discord voice channel by controlling a normal Discord user account as a programmable media client.
 
-The target is a user-account-controlled client that can join a voice channel, start a Go Live stream, play media, and expose playback controls.
+The current implementation can log in, listen for authorized commands, resolve local/direct media sources, join the command author's voice channel, and hand the media to the Go Live transport.
 
 > [!CAUTION]
 > This project automates a normal Discord user account. Discord explicitly prohibits automating normal user accounts ("self-bots") outside its supported bot/OAuth2 APIs, and says this can result in account termination.
@@ -13,21 +13,83 @@ The target is a user-account-controlled client that can join a voice channel, st
 > https://support.discord.com/hc/en-us/articles/115002192352-Automated-User-Accounts-Self-Bots
 > https://discord.com/guidelines
 
-## Status
+## Current status
 
-The repository currently contains the initial scaffold and project documentation. The runtime will be implemented around a clean separation between source resolution, media processing, and Discord streaming transport.
+Implemented now:
 
-Target end state:
+- TypeScript/Node project scaffold.
+- Environment-based configuration.
+- Authorized-user command handling.
+- Local file resolution under VIDBOT_MEDIA_ROOT.
+- Direct HTTP(S) URL resolution.
+- Discord attachment URL handling.
+- Google Drive, Mega, and YouTube URL classification.
+- Discord selfbot session integration.
+- Join the author's current voice channel.
+- Go Live playback through @dank074/discord-video-stream.
+- Stop and leave controls.
+- Source-classification unit tests and CI.
 
-- Local/direct media files.
-- Discord attachment URLs.
-- Google Drive links.
-- Mega links.
-- YouTube URLs.
-- Voice-channel join/leave.
-- Go Live video with audio.
-- Playback controls such as stop, pause/resume, seek, and volume.
-- Provider-specific code isolated from Discord transport code.
+Not implemented yet:
+
+- Actual Google Drive/Mega/YouTube stream resolution.
+- Pause/resume/seek/queue controls.
+- Full reconnection/error recovery.
+- End-to-end live Discord verification.
+
+## Quick start
+
+Requirements:
+
+- Node.js 22.4 or newer.
+- FFmpeg installed and available on PATH.
+- A disposable experimental Discord user account.
+- A server where that account can join the target voice channel.
+
+Install dependencies:
+
+~~~bash
+npm install
+~~~
+
+Set environment variables:
+
+~~~text
+DISCORD_USER_TOKEN=...
+VIDBOT_ALLOWED_USERS=123456789012345678
+VIDBOT_MEDIA_ROOT=C:\path\to\vidbot\media
+~~~
+
+The media root is optional. Without it, local files are disabled.
+
+Run tests and build:
+
+~~~bash
+npm run test
+npm run check
+npm run build
+~~~
+
+Start:
+
+~~~bash
+npm start
+~~~
+
+## Commands
+
+The current command prefix defaults to $.
+
+~~~text
+$play <URL or local file>
+$stop
+$leave
+$source <URL or local file>
+~~~
+
+For $play, the account joins the voice channel that the message author is currently in. A Discord message attachment can also be used directly by sending the $play command with a video attached.
+
+Only users listed in VIDBOT_ALLOWED_USERS can control the client when that variable is non-empty.
 
 ## Architecture
 
@@ -63,108 +125,40 @@ Command / Control
 The planned low-level video transport is based on:
 https://github.com/Discord-RE/Discord-video-stream
 
-That library documents Go Live and camera streaming, H.264/H.265 support, RTP/RTX handling, FFmpeg-backed media processing, and a selfbot client dependency. Its README also states that normal bot tokens are not supported for its video path.
+That library documents Go Live and camera streaming, H.264/H.265 support, RTP/RTX handling, FFmpeg-backed media processing, and a selfbot client dependency.
 
 ## Media sources
 
-| Source | Handling |
+| Source | Current state |
 |---|---|
-| Local file | Open directly |
-| Direct HTTP(S) URL | Feed URL/stream to FFmpeg |
-| Discord attachment | Treat attachment URL as media input |
-| Google Drive | Resolve the share link to a playable/downloadable source |
-| Mega | Resolve the share link to a playable stream |
-| YouTube | Resolve the URL to a playable media stream |
+| Local file | Working |
+| Direct HTTP(S) media URL | Working, provided FFmpeg can read it |
+| Discord attachment URL | Working as a direct URL |
+| Google Drive | Classified, resolver not implemented |
+| Mega | Classified, resolver not implemented |
+| YouTube | Classified, resolver not implemented |
 
-Important: YouTube, Google Drive, and Mega URLs are not necessarily direct media files. Keep provider resolution in a dedicated resolver layer.
-
-A normalized source can look like:
-
-~~~
-export interface MediaSource {
-  kind: "file" | "url" | "stream";
-  input: string | NodeJS.ReadableStream;
-  title?: string;
-  contentType?: string;
-}
-~~~
-
-## Planned commands
-
-~~~
-/play <source>
-/join
-/leave
-/stop
-/pause
-/resume
-/seek <seconds>
-/nowplaying
-/volume <0-200>
-~~~
-
-The exact command system can change. Provider and playback code should not depend on one command framework.
-
-## Media pipeline
-
-The referenced streaming library requires FFmpeg to be installed and available on PATH. It also uses native components, so platform support must be tested instead of assumed.
-
-The pipeline should:
-
-1. Resolve a source.
-2. Probe the media when required.
-3. Decode audio/video with FFmpeg.
-4. Normalize size, FPS, and formats.
-5. Encode Discord-compatible video/audio.
-6. Pass the resulting media to the Discord transport.
-7. Report failures without unnecessarily killing the Discord session.
-
-Software H.264 should be the baseline. Hardware acceleration can come later.
+Hosted-provider URLs are deliberately resolved outside the Discord transport layer. A YouTube share URL, for example, is not necessarily a direct media stream.
 
 ## Credentials
 
 Treat the Discord user token like a password.
 
-Use a local secret or environment variable such as:
+Use the environment variable:
 
-~~~
+~~~text
 DISCORD_USER_TOKEN=...
 ~~~
 
-Never:
+Never commit, print, screenshot, or log the token. See SECURITY.md.
 
-- commit tokens;
-- print tokens;
-- put tokens in command-line examples;
-- put tokens in CI logs or screenshots;
-- upload .env files;
-- use a personal account as the test account.
+## Development docs
 
-See [SECURITY.md](SECURITY.md).
-
-## Development
-
-The current streaming library documents:
-
-- Node.js >=22.4.0
-- FFmpeg on PATH
-- @lng2004/discord.js-selfbot-v13
-- @dank074/discord-video-stream
-- native video/data-channel dependencies
-
-Pin dependency versions once implementation begins.
-
-## Repository docs
-
-- [AGENTS.md](AGENTS.md)
-- [ARCHITECTURE.md](ARCHITECTURE.md)
-- [TODO.md](TODO.md)
-- [SECURITY.md](SECURITY.md)
-
-## Non-goals
-
-This project is not intended for spam, raids, mass messaging, Discord-data collection, bypassing access controls, hiding automation from Discord, or distributing account tokens.
+- AGENTS.md
+- ARCHITECTURE.md
+- TODO.md
+- SECURITY.md
 
 ## License
 
-The repository currently uses GNU GPL v3.0. See [LICENSE](LICENSE).
+The repository uses GNU GPL v3.0. See LICENSE.
