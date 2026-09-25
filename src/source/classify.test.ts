@@ -10,6 +10,13 @@ test("classifies local paths", () => {
   });
 });
 
+test("classifies Windows paths", () => {
+  assert.equal(
+    classifyInput("C:\\media\\test.mp4").provider,
+    "local",
+  );
+});
+
 test("classifies Discord attachments", () => {
   const result = classifyInput(
     "https://cdn.discordapp.com/attachments/123/456/video.mp4?ex=abc",
@@ -31,8 +38,15 @@ test("classifies Mega", () => {
 });
 
 test("classifies YouTube", () => {
-  const result = classifyInput("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+  const result = classifyInput("https://www.youtube.com/watch?v=example");
   assert.equal(result.provider, "youtube");
+});
+
+test("keeps direct media CDNs as direct URLs", () => {
+  const result = classifyInput(
+    "https://rr1---sn.example.googlevideo.com/videoplayback",
+  );
+  assert.equal(result.provider, "direct");
 });
 
 test("classifies arbitrary HTTP URLs as direct media", () => {
