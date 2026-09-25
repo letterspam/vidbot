@@ -38,7 +38,7 @@ export async function resolveMega(value: string): Promise<MediaSource> {
     throw new Error("MEGA folders are not supported yet; provide a file link");
   }
 
-  const input = await selected.download();
+  const input = selected.download({});
   return {
     kind: "stream",
     provider: "mega",
