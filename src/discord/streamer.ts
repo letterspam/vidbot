@@ -18,6 +18,14 @@ export interface NowPlaying {
   readonly elapsedSeconds: number;
 }
 
+export interface StreamStatus {
+  readonly connected: boolean;
+  readonly guildId?: string;
+  readonly channelId?: string;
+  readonly nowPlaying?: NowPlaying;
+  readonly volume: number;
+}
+
 interface PlaybackState {
   readonly id: symbol;
   readonly source: MediaSource;
@@ -136,6 +144,19 @@ export class DiscordStreamer {
     this.playbackAbort = undefined;
     this.playbackController = undefined;
     this.playbackState = undefined;
+  }
+
+  getStatus(): StreamStatus {
+    const connection = this.streamer.voiceConnection;
+    const nowPlaying = this.getNowPlaying();
+
+    return {
+      connected: Boolean(connection),
+      ...(connection?.guildId ? { guildId: connection.guildId } : {}),
+      ...(connection?.channelId ? { channelId: connection.channelId } : {}),
+      ...(nowPlaying ? { nowPlaying } : {}),
+      volume: this.getVolume(),
+    };
   }
 
   getNowPlaying(): NowPlaying | undefined {
