@@ -8,10 +8,16 @@ import {
 import type { Config } from "../config.js";
 import type { MediaSource } from "../types.js";
 
+interface PlaybackController {
+  readonly volume: number;
+  setVolume(value: number): Promise<boolean>;
+}
+
 export class DiscordStreamer {
   readonly client: Client;
   private readonly streamer: Streamer;
-  private controller: AbortController | undefined;
+  private playbackAbort: AbortController | undefined;
+  private playbackController: PlaybackController | undefined;
 
   constructor(private readonly config: Config) {
     this.client = new Client();
@@ -23,6 +29,20 @@ export class DiscordStreamer {
   }
 
   async join(guildId: string, channelId: string): Promise<void> {
+    const connection = this.streamer.voiceConnection;
+
+    if (
+      connection &&
+      connection.guildId === guildId &&
+      connection.channelId === channelId
+    ) {
+      return;
+    }
+
+    if (connection) {
+      this.streamer.leaveVoice();
+    }
+
     await this.streamer.joinVoice(guildId, channelId);
   }
 
@@ -31,42 +51,66 @@ export class DiscordStreamer {
       throw new Error("Join a voice channel before starting playback");
     }
 
-    this.controller?.abort();
-    this.controller = new AbortController();
+    this.stop();
 
-    const { command, output } = prepareStream(
-      source.input,
-      {
-        width: this.config.width,
-        height: this.config.height,
-        frameRate: this.config.fps,
-        bitrateVideo: this.config.videoBitrateKbps,
-        bitrateVideoMax: this.config.videoMaxBitrateKbps,
-        bitrateAudio: this.config.audioBitrateKbps,
-        videoCodec: Utils.normalizeVideoCodec(this.config.videoCodec),
-      },
-      this.controller.signal,
-    );
-
-    command.on("error", (error) => {
-      console.error("[ffmpeg]", error);
-    });
+    const abort = new AbortController();
+    this.playbackAbort = abort;
 
     try {
+      const { command, output, controller } = prepareStream(
+        source.input,
+        {
+          width: this.config.width,
+          height: this.config.height,
+          frameRate: this.config.fps,
+          bitrateVideo: this.config.videoBitrateKbps,
+          bitrateVideoMax: this.config.videoMaxBitrateKbps,
+          bitrateAudio: this.config.audioBitrateKbps,
+          videoCodec: Utils.normalizeVideoCodec(this.config.videoCodec),
+        },
+        abort.signal,
+      );
+
+      this.playbackController = controller;
+
+      command.on("error", (error) => {
+        console.error("[ffmpeg]", error);
+      });
+
       await playStream(
         output,
         this.streamer,
         { type: "go-live" },
-        this.controller.signal,
+        abort.signal,
       );
     } finally {
-      this.controller = undefined;
+      if (this.playbackAbort === abort) {
+        this.playbackAbort = undefined;
+        this.playbackController = undefined;
+      }
     }
   }
 
   stop(): void {
-    this.controller?.abort();
-    this.controller = undefined;
+    this.playbackAbort?.abort();
+    this.playbackAbort = undefined;
+    this.playbackController = undefined;
+  }
+
+  async setVolume(percent: number): Promise<boolean> {
+    if (!Number.isFinite(percent) || percent < 0 || percent > 200) {
+      throw new Error("Volume must be between 0 and 200");
+    }
+
+    if (!this.playbackController) {
+      throw new Error("Nothing is currently playing");
+    }
+
+    return this.playbackController.setVolume(percent / 100);
+  }
+
+  getVolume(): number {
+    return (this.playbackController?.volume ?? 1) * 100;
   }
 
   leave(): void {
