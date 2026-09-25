@@ -52,6 +52,29 @@ discord.client.on("messageCreate", async (message) => {
       case "leave":
         discord.leave();
         break;
+      case "status": {
+        const status = discord.getStatus();
+        const lines = [
+          "Connected: " + (status.connected ? "yes" : "no"),
+          "Playing: " + (status.nowPlaying ? "yes" : "no"),
+          "Volume: " + status.volume.toFixed(0) + "%",
+        ];
+
+        if (status.nowPlaying) {
+          const elapsed = Math.floor(status.nowPlaying.elapsedSeconds);
+          const minutes = Math.floor(elapsed / 60);
+          const seconds = String(elapsed % 60).padStart(2, "0");
+          lines.push(
+            "Source: " +
+              (status.nowPlaying.source.title ??
+                status.nowPlaying.source.provider),
+            "Elapsed: " + minutes + ":" + seconds,
+          );
+        }
+
+        await message.reply(lines.join("\n"));
+        break;
+      }
       case "nowplaying": {
         const nowPlaying = discord.getNowPlaying();
         if (!nowPlaying) {
