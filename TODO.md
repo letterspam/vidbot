@@ -8,7 +8,7 @@ Status: [ ] not started, [~] in progress, [x] complete, [!] blocked.
 - [x] Add runtime entry point.
 - [x] Add environment-based configuration.
 - [ ] Add structured logging.
-- [x] Add build/lint/test scripts.
+- [x] Add build/check/test scripts.
 - [x] Add CI.
 - [x] Add safe example configuration with no real credentials.
 
@@ -49,22 +49,22 @@ Status: [ ] not started, [~] in progress, [x] complete, [!] blocked.
 ### Google Drive
 
 - [x] Detect common share URLs.
-- [ ] Resolve playable/downloadable media.
+- [~] Resolve playable/downloadable media. Public-file URL conversion is implemented; Drive warning/confirmation cases still need testing.
 - [ ] Handle private files clearly.
 - [ ] Test large files without buffering everything into RAM.
 
 ### Mega
 
 - [x] Detect Mega share URLs.
-- [ ] Resolve a media stream through a maintained library/API.
+- [x] Resolve a media stream through megajs.
 - [ ] Handle expired or invalid links.
 - [ ] Avoid persistent downloads unless explicitly configured.
 
 ### YouTube
 
 - [x] Detect YouTube URLs.
-- [ ] Add a maintained resolver backend.
-- [ ] Resolve playable media without storing the whole video.
+- [x] Add a maintained resolver backend with ytdlp-nodejs.
+- [x] Resolve playable media as a stream without storing the whole video.
 - [ ] Handle age, region, and login restrictions as explicit errors.
 - [ ] Handle live streams separately if supported.
 - [ ] Keep YouTube code isolated from Discord transport.
