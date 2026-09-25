@@ -27,7 +27,7 @@ Implemented now:
 - Discord selfbot session integration.
 - Join the author's current voice channel.
 - Go Live playback through @dank074/discord-video-stream.
-- Stop and leave controls.
+- Stop, leave, and live volume controls.
 - Source-classification unit tests and CI.
 
 Not implemented yet:
@@ -84,6 +84,7 @@ The current command prefix defaults to $.
 $play <URL or local file>
 $stop
 $leave
+$volume <0-200>
 $source <URL or local file>
 ~~~
 
