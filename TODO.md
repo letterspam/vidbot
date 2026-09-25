@@ -94,6 +94,7 @@ Status: [ ] not started, [~] in progress, [x] complete, [!] blocked.
 - [ ] Add a watchdog for hung media pipelines.
 - [x] Clean up the active stream when stop/leave is called.
 - [x] Prevent a failed video from permanently wedging the session.
+- [x] Cleanly shut down playback and the Discord client on process termination.
 
 ## Phase 7 - Performance
 
