@@ -3,6 +3,11 @@ import path from "node:path";
 import type { Config } from "../config.js";
 import type { MediaSource, Provider } from "../types.js";
 import { classifyInput } from "./classify.js";
+import {
+  resolveGoogleDrive,
+  resolveMega,
+  resolveYouTube,
+} from "./hosted.js";
 
 function assertInsideRoot(filePath: string, root: string): string {
   const resolvedRoot = path.resolve(root);
@@ -23,9 +28,10 @@ function localSource(value: string, config: Config): MediaSource {
     );
   }
 
-  const candidate = path.isAbsolute(value) || path.win32.isAbsolute(value)
-    ? value
-    : path.resolve(config.mediaRoot, value);
+  const candidate =
+    path.isAbsolute(value) || path.win32.isAbsolute(value)
+      ? value
+      : path.resolve(config.mediaRoot, value);
   const filePath = assertInsideRoot(candidate, config.mediaRoot);
 
   if (!fs.existsSync(filePath)) {
@@ -55,18 +61,24 @@ export async function resolveSource(
 
   if (classified.kind === "url") {
     const provider = classified.provider as Provider;
-    if (provider === "direct" || provider === "discord") {
-      return {
-        kind: "url",
-        provider,
-        input: classified.value,
-      };
-    }
 
-    throw new Error(
-      provider +
-        " links are classified correctly but their resolver is not implemented yet",
-    );
+    switch (provider) {
+      case "direct":
+      case "discord":
+        return {
+          kind: "url",
+          provider,
+          input: classified.value,
+        };
+      case "google-drive":
+        return resolveGoogleDrive(classified.value);
+      case "mega":
+        return resolveMega(classified.value);
+      case "youtube":
+        return resolveYouTube(classified.value);
+      default:
+        throw new Error("No resolver is registered for " + provider);
+    }
   }
 
   throw new Error("Unsupported media source. Use a local path or HTTP(S) URL");
