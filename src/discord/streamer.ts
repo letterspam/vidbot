@@ -18,8 +18,12 @@ export interface NowPlaying {
   readonly elapsedSeconds: number;
 }
 
+export type PlaybackPhase = "preparing" | "streaming";
+
 export interface StreamStatus {
   readonly connected: boolean;
+  readonly streaming: boolean;
+  readonly phase?: PlaybackPhase;
   readonly guildId?: string;
   readonly channelId?: string;
   readonly nowPlaying?: NowPlaying;
@@ -29,6 +33,7 @@ export interface StreamStatus {
 interface PlaybackState {
   readonly id: symbol;
   readonly source: MediaSource;
+  readonly phase: PlaybackPhase;
   readonly startedAt: number;
 }
 
@@ -80,6 +85,7 @@ export class DiscordStreamer {
     this.playbackState = {
       id: playbackId,
       source,
+      phase: "preparing",
       startedAt: Date.now(),
     };
 
@@ -99,6 +105,14 @@ export class DiscordStreamer {
       );
 
       this.playbackController = controller;
+
+      if (this.playbackState?.id === playbackId) {
+        this.playbackState = {
+          ...this.playbackState,
+          phase: "streaming",
+          startedAt: Date.now(),
+        };
+      }
 
       let ffmpegError: unknown;
       const ffmpegFinished = promise.catch((error) => {
@@ -152,6 +166,8 @@ export class DiscordStreamer {
 
     return {
       connected: Boolean(connection),
+      streaming: Boolean(connection?.streamConnection),
+      ...(this.playbackState?.phase ? { phase: this.playbackState.phase } : {}),
       ...(connection?.guildId ? { guildId: connection.guildId } : {}),
       ...(connection?.channelId ? { channelId: connection.channelId } : {}),
       ...(nowPlaying ? { nowPlaying } : {}),
@@ -161,7 +177,7 @@ export class DiscordStreamer {
 
   getNowPlaying(): NowPlaying | undefined {
     const state = this.playbackState;
-    if (!state) return undefined;
+    if (!state || state.phase !== "streaming") return undefined;
 
     return {
       source: state.source,
