@@ -4,65 +4,65 @@ Status: [ ] not started, [~] in progress, [x] complete, [!] blocked.
 
 ## Phase 0 - Foundation
 
-- [ ] Add package manifest and TypeScript config.
-- [ ] Add runtime entry point.
-- [ ] Add environment-based configuration.
+- [x] Add package manifest and TypeScript config.
+- [x] Add runtime entry point.
+- [x] Add environment-based configuration.
 - [ ] Add structured logging.
-- [ ] Add build/lint/test scripts.
-- [ ] Add CI.
-- [ ] Add safe example configuration with no real credentials.
+- [x] Add build/lint/test scripts.
+- [x] Add CI.
+- [x] Add safe example configuration with no real credentials.
 
 ## Phase 1 - Discord session
 
-- [ ] Integrate the selfbot client dependency.
-- [ ] Load the user token only from protected runtime config.
-- [ ] Connect and report readiness.
-- [ ] Join a configured voice channel.
-- [ ] Leave voice cleanly.
+- [x] Integrate the selfbot client dependency.
+- [x] Load the user token only from protected runtime config.
+- [x] Connect and report readiness.
+- [x] Join a configured voice channel during playback.
+- [x] Leave voice cleanly.
 - [ ] Handle reconnect/disconnect events.
-- [ ] Wrap selfbot internals behind a transport/session boundary.
+- [x] Wrap the streaming client behind a local transport class.
 
 ## Phase 2 - Minimal streaming
 
-- [ ] Integrate @dank074/discord-video-stream.
-- [ ] Verify FFmpeg discovery.
-- [ ] Stream a known-good local MP4.
-- [ ] Stream a known-good direct MP4 URL.
-- [ ] Start/stop Go Live reliably.
-- [ ] Verify audio.
-- [ ] Cleanly terminate FFmpeg and Discord stream resources.
+- [x] Integrate @dank074/discord-video-stream.
+- [ ] Verify FFmpeg discovery on supported developer machines.
+- [ ] Stream a known-good local MP4 end-to-end.
+- [ ] Stream a known-good direct MP4 URL end-to-end.
+- [x] Start/stop Go Live through the streaming library.
+- [ ] Verify audio in a live Discord session.
+- [x] Abort and replace an active playback pipeline.
 - [ ] Record tested codec/resolution/FPS combinations.
 
 ## Phase 3 - Source resolver
 
-- [ ] Define MediaSource.
-- [ ] Define SourceResolver.
-- [ ] Implement local files.
-- [ ] Implement direct HTTP(S).
-- [ ] Implement Discord attachment URLs.
-- [ ] Add provider classification tests.
-- [ ] Add timeout and redirect handling.
-- [ ] Add download/temp-file limits where appropriate.
+- [x] Define MediaSource.
+- [x] Define source classification.
+- [x] Implement local files.
+- [x] Implement direct HTTP(S) URLs.
+- [x] Implement Discord attachment URLs.
+- [x] Add provider classification tests.
+- [ ] Add request timeout and redirect handling for providers.
+- [x] Restrict local files to VIDBOT_MEDIA_ROOT.
 
 ## Phase 4 - Hosted providers
 
 ### Google Drive
 
-- [ ] Detect common share URLs.
+- [x] Detect common share URLs.
 - [ ] Resolve playable/downloadable media.
 - [ ] Handle private files clearly.
 - [ ] Test large files without buffering everything into RAM.
 
 ### Mega
 
-- [ ] Detect Mega share URLs.
+- [x] Detect Mega share URLs.
 - [ ] Resolve a media stream through a maintained library/API.
 - [ ] Handle expired or invalid links.
 - [ ] Avoid persistent downloads unless explicitly configured.
 
 ### YouTube
 
-- [ ] Detect YouTube URLs.
+- [x] Detect YouTube URLs.
 - [ ] Add a maintained resolver backend.
 - [ ] Resolve playable media without storing the whole video.
 - [ ] Handle age, region, and login restrictions as explicit errors.
@@ -71,27 +71,28 @@ Status: [ ] not started, [~] in progress, [x] complete, [!] blocked.
 
 ## Phase 5 - Playback controls
 
-- [ ] Add play.
-- [ ] Add stop.
+- [x] Add play.
+- [x] Add stop.
+- [x] Add leave.
 - [ ] Add pause.
 - [ ] Add resume.
 - [ ] Add seek.
 - [ ] Add nowplaying.
 - [ ] Add volume.
 - [ ] Add skip/queue support.
-- [ ] Restrict controls to an allowed set of users/roles.
-- [ ] Return useful command errors.
+- [x] Restrict controls to VIDBOT_ALLOWED_USERS when configured.
+- [x] Return useful command errors.
 
 ## Phase 6 - Reliability
 
-- [ ] Make cancellation idempotent.
-- [ ] Handle FFmpeg process exit.
+- [x] Make playback cancellation idempotent.
+- [ ] Handle FFmpeg process exit explicitly.
 - [ ] Handle remote source timeouts.
 - [ ] Handle Discord voice disconnects.
 - [ ] Add retries for transient network/provider errors.
 - [ ] Add a watchdog for hung media pipelines.
-- [ ] Guarantee temp-file cleanup.
-- [ ] Prevent failed video from permanently wedging the session.
+- [x] Clean up the active stream when stop/leave is called.
+- [ ] Prevent a failed video from permanently wedging the session.
 
 ## Phase 7 - Performance
 
@@ -105,7 +106,7 @@ Status: [ ] not started, [~] in progress, [x] complete, [!] blocked.
 
 ## Phase 8 - Testing
 
-- [ ] Unit-test input classification.
+- [x] Unit-test input classification.
 - [ ] Unit-test provider selection.
 - [ ] Unit-test playback state transitions.
 - [ ] Add FFmpeg fixture tests.
@@ -116,13 +117,13 @@ Status: [ ] not started, [~] in progress, [x] complete, [!] blocked.
 
 ## Phase 9 - Packaging/docs
 
-- [ ] Document Windows.
-- [ ] Document Linux.
-- [ ] Document macOS.
+- [ ] Document Windows setup.
+- [ ] Document Linux setup.
+- [ ] Document macOS setup.
 - [ ] Document FFmpeg setup.
-- [ ] Document environment variables.
-- [ ] Document supported sources and limitations.
-- [ ] Keep README commands synchronized with implementation.
+- [x] Document environment variables.
+- [x] Document supported source types and current limitations.
+- [x] Keep README aligned with the current implementation.
 - [ ] Add troubleshooting.
 - [ ] Add release/build instructions.
 
