@@ -109,7 +109,7 @@ Status: [ ] not started, [~] in progress, [x] complete, [!] blocked.
 
 - [x] Unit-test input classification.
 - [ ] Unit-test provider selection.
-- [ ] Unit-test playback state transitions.
+- [~] Unit-test playback state transitions. Playback phases are now explicit; tests still need the transport mocked.
 - [ ] Add FFmpeg fixture tests.
 - [ ] Mock provider network responses.
 - [ ] Mock Discord transport.
