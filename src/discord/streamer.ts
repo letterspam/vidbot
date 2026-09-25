@@ -13,11 +13,23 @@ interface PlaybackController {
   setVolume(value: number): Promise<boolean>;
 }
 
+export interface NowPlaying {
+  readonly source: MediaSource;
+  readonly elapsedSeconds: number;
+}
+
+interface PlaybackState {
+  readonly id: symbol;
+  readonly source: MediaSource;
+  readonly startedAt: number;
+}
+
 export class DiscordStreamer {
   readonly client: Client;
   private readonly streamer: Streamer;
   private playbackAbort: AbortController | undefined;
   private playbackController: PlaybackController | undefined;
+  private playbackState: PlaybackState | undefined;
 
   constructor(private readonly config: Config) {
     this.client = new Client();
@@ -40,6 +52,7 @@ export class DiscordStreamer {
     }
 
     if (connection) {
+      this.stop();
       this.streamer.leaveVoice();
     }
 
@@ -54,10 +67,16 @@ export class DiscordStreamer {
     this.stop();
 
     const abort = new AbortController();
+    const playbackId = Symbol("playback");
     this.playbackAbort = abort;
+    this.playbackState = {
+      id: playbackId,
+      source,
+      startedAt: Date.now(),
+    };
 
     try {
-      const { command, output, controller } = prepareStream(
+      const { command, output, promise, controller } = prepareStream(
         source.input,
         {
           width: this.config.width,
@@ -73,20 +92,41 @@ export class DiscordStreamer {
 
       this.playbackController = controller;
 
+      let ffmpegError: unknown;
+      const ffmpegFinished = promise.catch((error) => {
+        ffmpegError = error;
+      });
+
       command.on("error", (error) => {
         console.error("[ffmpeg]", error);
       });
 
-      await playStream(
-        output,
-        this.streamer,
-        { type: "go-live" },
-        abort.signal,
-      );
+      try {
+        await playStream(
+          output,
+          this.streamer,
+          { type: "go-live" },
+          abort.signal,
+        );
+        await ffmpegFinished;
+
+        if (ffmpegError) {
+          throw ffmpegError;
+        }
+      } catch (error) {
+        if (!abort.signal.aborted) {
+          abort.abort(error);
+        }
+        throw error;
+      }
     } finally {
       if (this.playbackAbort === abort) {
         this.playbackAbort = undefined;
         this.playbackController = undefined;
+      }
+
+      if (this.playbackState?.id === playbackId) {
+        this.playbackState = undefined;
       }
     }
   }
@@ -95,6 +135,17 @@ export class DiscordStreamer {
     this.playbackAbort?.abort();
     this.playbackAbort = undefined;
     this.playbackController = undefined;
+    this.playbackState = undefined;
+  }
+
+  getNowPlaying(): NowPlaying | undefined {
+    const state = this.playbackState;
+    if (!state) return undefined;
+
+    return {
+      source: state.source,
+      elapsedSeconds: Math.max(0, (Date.now() - state.startedAt) / 1000),
+    };
   }
 
   async setVolume(percent: number): Promise<boolean> {
